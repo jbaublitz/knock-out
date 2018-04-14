@@ -2,12 +2,12 @@ extern crate core;
 
 use core::ptr;
 
-extern {
+extern "C" {
     pub static owner: *const u8;
     fn printk(msg: *const u8);
     fn alloc_chrdev_region(first: *const u64, first_minor: u32, count: u32, name: *const u8) -> i32;
     fn unregister_chrdev_region(first: u64, count: u32) -> i32;
-    fn copy_to_user(from_buf: *const u8, buf: *mut u8, count: u64) -> u64;
+    fn copy_to_user_ffi(to: *mut u8, from: *const u8, count: u64) -> u64;
 }
 
 pub static DEV: u64 = 0;
@@ -16,7 +16,7 @@ pub static DEV: u64 = 0;
 pub struct FileOperations {
     owner: *const u8,
     llseek: *const u8,
-    read: extern fn(*mut u8, *mut u8, u32, *const u64) -> i32,
+    read: extern fn(*mut u8, *mut u8, u32, *const u32) -> i32,
     write: *const u8,
     ioctl: *const u8,
     open: extern fn(*mut u8, *mut u8) -> i32,
@@ -24,8 +24,8 @@ pub struct FileOperations {
 }
 
 #[no_mangle]
-pub extern fn parrot_read(_file: *mut u8, buf: *mut u8, _count: u32, _offset: *const u64) -> i32 {
-    unsafe { copy_to_user("hello\0".as_ptr(), buf, 6) };
+pub extern fn parrot_read(_file: *mut u8, buf: *mut u8, _count: u32, _offset: *const u32) -> i32 {
+    unsafe { copy_to_user_ffi(buf, "hello\0".as_ptr(), 6) };
     0
 }
 
