@@ -1,4 +1,4 @@
-extern crate core;
+#![no_std]
 
 use core::ptr;
 

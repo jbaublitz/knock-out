@@ -1,12 +1,11 @@
 obj-m += parrot.o
-parrot-objs := build/rust.o src/ffi.o
+parrot-objs := src/rust.o src/ffi.o
 
-all: build/rust.o
+all: src/rust.o
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
-build/rust.o: src/lib.rs
-	mkdir -p build
-	rustc -C relocation-model=static --emit obj --crate-type=lib -o build/rust.o src/lib.rs
+src/rust.o: src/lib.rs
+	rustc -C relocation-model=static --emit obj --crate-type=lib -o src/rust.o src/lib.rs
