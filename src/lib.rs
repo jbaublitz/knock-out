@@ -18,7 +18,7 @@ fn panic_fmt() -> ! {
 
 extern "C" {
     static owner: *const u8;
-    static cdev_buffer: *mut u8;
+    static cdev_ptr: *mut u8;
     static cdev_len: u32;
     fn printk(msg: *const u8);
     fn alloc_chrdev_region(first: *const u32, first_minor: u32, count: u32, name: *const u8) -> i32;
@@ -55,7 +55,7 @@ struct ParrotSafe<'a> {
 
 impl<'a> ParrotSafe<'a> {
     fn cdev() -> &'a mut [u8] {
-        unsafe { slice::from_raw_parts_mut(cdev_buffer, cdev_len as usize) }
+        unsafe { slice::from_raw_parts_mut(cdev_ptr, cdev_len as usize) }
     }
 
     #[inline]
@@ -64,7 +64,7 @@ impl<'a> ParrotSafe<'a> {
     }
 
     #[inline]
-    fn printk_safe(msg: &'static str) {
+    fn printk_safe(msg: &str) {
         unsafe { printk(msg.as_ptr()) }
     }
 
@@ -95,7 +95,7 @@ impl<'a> ParrotSafe<'a> {
         if rc == 0 {
             Ok(())
         } else {
-            Err("Failed to add char dev")
+            Err("Failed to add char dev\0")
         }
     }
 
@@ -108,7 +108,7 @@ impl<'a> ParrotSafe<'a> {
         let fops = FileOperations::new(parrot_read, parrot_open, parrot_release);
         let mut psafe = ParrotSafe { dev: 0, count: 0, fops, cdev: Self::cdev() };
         if psafe.alloc_chrdev_region_safe(0, 1, "parrot\0") != 0 {
-            return Err("Failed to allocate char device region");
+            return Err("Failed to allocate char device region\0");
         }
         psafe.cdev_init_safe();
         psafe.cdev_add_safe()?;
