@@ -5,8 +5,8 @@
 #include <linux/uaccess.h>
 
 struct module *owner = THIS_MODULE;
-unsigned long cdev_len = sizeof(struct cdev);
-unsigned long kobject_len = sizeof(struct kobject);
+unsigned int cdev_len = sizeof(struct cdev);
+struct cdev cdev_buffer;
 
 extern unsigned long copy_to_user_ffi(void *to, const void *from, unsigned long count) {
     return copy_to_user(to, from, count);

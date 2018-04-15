@@ -8,4 +8,4 @@ clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
 src/rust.o: src/lib.rs
-	rustc -C relocation-model=static --emit obj --crate-type=cdylib -o src/rust.o src/lib.rs
+	rustc -C panic=abort -C relocation-model=static --emit obj --crate-type=cdylib -o src/rust.o src/lib.rs
