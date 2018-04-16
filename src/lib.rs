@@ -1,7 +1,6 @@
 #![feature(lang_items,untagged_unions,extern_types)]
 #![no_std]
 
-use core::ptr;
 use core::slice;
 use core::result::Result;
 
@@ -18,14 +17,20 @@ fn panic_fmt() -> ! {
 
 extern "C" {
     static owner: *const u8;
-    static cdev_ptr: *mut u8;
     static cdev_len: u32;
+    static cdev_ptr: *mut u8;
+    static fops_len: u32;
+    static fops_ptr: *mut u8;
+    static parrot_owner_ptr: *mut *const u8;
+    static parrot_read_ptr: *mut extern fn(*mut u8, *mut u8, u32, *const u32) -> i32;
+    static parrot_open_ptr: *mut extern fn(*mut u8, *mut u8) -> i32;
+    static parrot_release_ptr: *mut extern fn(*mut u8, *mut u8) -> i32;
     fn printk(msg: *const u8);
     fn alloc_chrdev_region(first: *const u32, first_minor: u32, count: u32, name: *const u8) -> i32;
     fn unregister_chrdev_region(first: u32, count: u32) -> i32;
 	#[inline]
     fn copy_to_user_ffi(to: *mut u8, from: *const u8, count: u64) -> u64;
-    fn cdev_init(cdev: *mut u8, fops: *const FileOperations);
+    fn cdev_init(cdev: *mut u8, fops: *const u8);
     fn cdev_add(cdev: *mut u8, dev: u32, count: u32) -> i32;
     fn cdev_del(cdev: *mut u8);
 }
@@ -33,7 +38,7 @@ extern "C" {
 #[no_mangle]
 pub extern "C" fn parrot_read(_file: *mut u8, buf: *mut u8, _count: u32, _offset: *const u32) -> i32 {
     ParrotSafe::copy_to_user_ffi_safe(buf, "hello\0".as_bytes());
-    0
+    6
 }
 
 #[no_mangle]
@@ -49,23 +54,40 @@ pub extern "C" fn parrot_release(_inode: *mut u8, _file: *mut u8) -> i32 {
 struct ParrotSafe<'a> {
     dev: u32,
     count: u32,
-    fops: FileOperations,
     cdev: &'a mut [u8],
+    fops: &'a mut [u8],
 }
 
 impl<'a> ParrotSafe<'a> {
-    fn cdev() -> &'a mut [u8] {
-        unsafe { slice::from_raw_parts_mut(cdev_ptr, cdev_len as usize) }
-    }
-
     #[inline]
     fn owner() -> *const u8 {
         unsafe { owner }
     }
 
+    fn cdev() -> &'a mut [u8] {
+        unsafe { slice::from_raw_parts_mut(cdev_ptr, cdev_len as usize) }
+    }
+
+    #[inline]
+    fn fops() -> &'a mut [u8] {
+        unsafe { slice::from_raw_parts_mut(fops_ptr, fops_len as usize) }
+    }
+
     #[inline]
     fn printk_safe(msg: &str) {
         unsafe { printk(msg.as_ptr()) }
+    }
+
+    #[inline]
+    fn set_fops_safe(read: extern "C" fn(*mut u8, *mut u8, u32, *const u32) -> i32,
+                open: extern "C" fn(*mut u8, *mut u8) -> i32,
+                release: extern "C" fn(*mut u8, *mut u8) -> i32) {
+        unsafe {
+            *parrot_owner_ptr = Self::owner();
+            *parrot_read_ptr = read;
+            *parrot_open_ptr = open;
+            *parrot_release_ptr = release;
+        }
     }
 
     #[inline]
@@ -86,7 +108,7 @@ impl<'a> ParrotSafe<'a> {
 
     #[inline]
     fn cdev_init_safe(&mut self) {
-        unsafe { cdev_init(self.cdev.as_mut_ptr(), &self.fops as *const FileOperations) }
+        unsafe { cdev_init(self.cdev.as_mut_ptr(), self.fops.as_ptr()) }
     }
 
     #[inline]
@@ -105,8 +127,8 @@ impl<'a> ParrotSafe<'a> {
     }
 
     fn new() -> Result<Self, &'static str> {
-        let fops = FileOperations::new(parrot_read, parrot_open, parrot_release);
-        let mut psafe = ParrotSafe { dev: 0, count: 0, fops, cdev: Self::cdev() };
+        let mut psafe = ParrotSafe { dev: 0, count: 0, fops: Self::fops(), cdev: Self::cdev() };
+        Self::set_fops_safe(parrot_read, parrot_open, parrot_release);
         if psafe.alloc_chrdev_region_safe(0, 1, "parrot\0") != 0 {
             return Err("Failed to allocate char device region\0");
         }
@@ -119,81 +141,6 @@ impl<'a> ParrotSafe<'a> {
         self.unregister_chrdev_region_safe();
         self.cdev_del_safe();
         Ok(())
-    }
-}
-
-#[repr(C)]
-struct FileOperations {
-    owner: *const u8,
-    llseek: *const u8,
-    read: extern "C" fn(*mut u8, *mut u8, u32, *const u32) -> i32,
-    write: *const u8,
-    read_iter: *const u8,
-    write_iter: *const u8,
-    iterate: *const u8,
-    iterate_shared: *const u8,
-    poll: *const u8,
-    unlocked_ioctl: *const u8,
-    compat_ioctl: *const u8,
-    mmap: *const u8,
-    open: extern "C" fn(*mut u8, *mut u8) -> i32,
-    flush: *const u8,
-    release: extern "C" fn(*mut u8, *mut u8) -> i32,
-    fsync: *const u8,
-    fasync: *const u8,
-    lock: *const u8,
-    sendpage: *const u8,
-    get_unmapped_area: *const u8,
-    check_flags: *const u8,
-    flock: *const u8,
-    splice_write: *const u8,
-    splice_read: *const u8,
-    setlease: *const u8,
-    fallocate: *const u8,
-    show_fdinfo: *const u8,
-    mmap_capabilities: *const u8,
-    copy_file_range: *const u8,
-    clone_file_range: *const u8,
-    dedupe_file_range: *const u8,
-}
-
-impl FileOperations {
-    fn new(read: extern "C" fn(*mut u8, *mut u8, u32, *const u32) -> i32,
-           open: extern fn(*mut u8, *mut u8) -> i32,
-           release: extern fn(*mut u8, *mut u8) -> i32) -> FileOperations {
-        FileOperations {
-            owner: ParrotSafe::owner(),
-            llseek: ptr::null(),
-            read,
-            write: ptr::null(),
-            read_iter: ptr::null(),
-            write_iter: ptr::null(),
-            iterate: ptr::null(),
-            iterate_shared: ptr::null(),
-            poll: ptr::null(),
-            unlocked_ioctl: ptr::null(),
-            compat_ioctl: ptr::null(),
-            mmap: ptr::null(),
-            open,
-            flush: ptr::null(),
-            release,
-            fsync: ptr::null(),
-            fasync: ptr::null(),
-            lock: ptr::null(),
-            sendpage: ptr::null(),
-            get_unmapped_area: ptr::null(),
-            check_flags: ptr::null(),
-            flock: ptr::null(),
-            splice_write: ptr::null(),
-            splice_read: ptr::null(),
-            setlease: ptr::null(),
-            fallocate: ptr::null(),
-            show_fdinfo: ptr::null(),
-            mmap_capabilities: ptr::null(),
-            copy_file_range: ptr::null(),
-            clone_file_range: ptr::null(),
-            dedupe_file_range: ptr::null(),
-        }
     }
 }
 
