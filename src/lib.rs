@@ -4,6 +4,10 @@
 use core::slice;
 use core::result::Result;
 
+mod parrot;
+
+use parrot::*;
+
 #[lang = "eh_personality"]
 #[no_mangle]
 pub extern fn eh_personality() {}
@@ -33,12 +37,20 @@ extern "C" {
     fn cdev_init(cdev: *mut u8, fops: *const u8);
     fn cdev_add(cdev: *mut u8, dev: u32, count: u32) -> i32;
     fn cdev_del(cdev: *mut u8);
+    fn msleep(msecs: u64);
 }
+
+const FRAMES: [&str; 10] = [FRAME0, FRAME1, FRAME2, FRAME3, FRAME4, FRAME5, FRAME6,
+                            FRAME7, FRAME8, FRAME9];
+static mut FRAME_COUNTER: u8 = 0;
 
 #[no_mangle]
 pub extern "C" fn parrot_read(_file: *mut u8, buf: *mut u8, _count: u32, _offset: *const u32) -> i32 {
-    ParrotSafe::copy_to_user_ffi_safe(buf, "hello\0".as_bytes());
-    6
+    let frame = FRAMES.get(unsafe { FRAME_COUNTER } as usize).unwrap_or(&"");
+    ParrotSafe::copy_to_user_ffi_safe(buf, frame.as_bytes());
+    unsafe { msleep(50) };
+    unsafe { FRAME_COUNTER = FRAME_COUNTER.wrapping_add(1) % 10 };
+    frame.len() as i32
 }
 
 #[no_mangle]
@@ -127,7 +139,7 @@ impl<'a> ParrotSafe<'a> {
     }
 
     fn new() -> Result<Self, &'static str> {
-        let mut psafe = ParrotSafe { dev: 0, count: 0, fops: Self::fops(), cdev: Self::cdev() };
+        let mut psafe = ParrotSafe { dev: 0, count: 0, fops: Self::fops(), cdev: Self::cdev(), };
         Self::set_fops_safe(parrot_read, parrot_open, parrot_release);
         if psafe.alloc_chrdev_region_safe(0, 1, "parrot\0") != 0 {
             return Err("Failed to allocate char device region\0");
