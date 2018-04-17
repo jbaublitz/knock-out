@@ -1,4 +1,4 @@
-#![feature(lang_items,untagged_unions,extern_types)]
+#![feature(lang_items)]
 #![no_std]
 
 use core::result::Result;
