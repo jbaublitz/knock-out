@@ -1,7 +1,6 @@
 #![feature(lang_items,untagged_unions,extern_types)]
 #![no_std]
 
-use core::slice;
 use core::result::Result;
 
 mod parrot;
@@ -21,9 +20,7 @@ fn panic_fmt() -> ! {
 
 extern "C" {
     static owner: *const u8;
-    static cdev_len: u32;
     static cdev_ptr: *mut u8;
-    static fops_len: u32;
     static fops_ptr: *mut u8;
     static parrot_owner_ptr: *mut *const u8;
     static parrot_read_ptr: *mut extern fn(*mut u8, *mut u8, u32, *const u32) -> i32;
@@ -48,8 +45,11 @@ static mut FRAME_COUNTER: u8 = 0;
 pub extern "C" fn parrot_read(_file: *mut u8, buf: *mut u8, _count: u32, _offset: *const u32) -> i32 {
     let frame = FRAMES.get(unsafe { FRAME_COUNTER } as usize).unwrap_or(&"");
     ParrotSafe::copy_to_user_ffi_safe(buf, frame.as_bytes());
-    unsafe { msleep(50) };
-    unsafe { FRAME_COUNTER = FRAME_COUNTER.wrapping_add(1) % 10 };
+    unsafe {
+        FRAME_COUNTER = FRAME_COUNTER.wrapping_add(1) % 10;
+        // Yes, this is terrible
+        msleep(50);
+    }
     frame.len() as i32
 }
 
@@ -63,26 +63,25 @@ pub extern "C" fn parrot_release(_inode: *mut u8, _file: *mut u8) -> i32 {
     0
 }
 
-struct ParrotSafe<'a> {
+struct ParrotSafe {
     dev: u32,
     count: u32,
-    cdev: &'a mut [u8],
-    fops: &'a mut [u8],
 }
 
-impl<'a> ParrotSafe<'a> {
+impl ParrotSafe {
     #[inline]
     fn owner() -> *const u8 {
         unsafe { owner }
     }
 
-    fn cdev() -> &'a mut [u8] {
-        unsafe { slice::from_raw_parts_mut(cdev_ptr, cdev_len as usize) }
+    #[inline]
+    fn cdev_ptr() -> *mut u8 {
+        unsafe { cdev_ptr }
     }
 
     #[inline]
-    fn fops() -> &'a mut [u8] {
-        unsafe { slice::from_raw_parts_mut(fops_ptr, fops_len as usize) }
+    fn fops_ptr() -> *mut u8 {
+        unsafe { fops_ptr }
     }
 
     #[inline]
@@ -120,12 +119,12 @@ impl<'a> ParrotSafe<'a> {
 
     #[inline]
     fn cdev_init_safe(&mut self) {
-        unsafe { cdev_init(self.cdev.as_mut_ptr(), self.fops.as_ptr()) }
+        unsafe { cdev_init(Self::cdev_ptr(), Self::fops_ptr()) }
     }
 
     #[inline]
     fn cdev_add_safe(&mut self) -> Result<(), &'static str> {
-        let rc = unsafe { cdev_add(self.cdev.as_mut_ptr(), self.dev, self.count) };
+        let rc = unsafe { cdev_add(Self::cdev_ptr(), self.dev, self.count) };
         if rc == 0 {
             Ok(())
         } else {
@@ -135,11 +134,11 @@ impl<'a> ParrotSafe<'a> {
 
     #[inline]
     fn cdev_del_safe(&mut self) {
-        unsafe { cdev_del(self.cdev.as_mut_ptr()) }
+        unsafe { cdev_del(Self::cdev_ptr()) }
     }
 
     fn new() -> Result<Self, &'static str> {
-        let mut psafe = ParrotSafe { dev: 0, count: 0, fops: Self::fops(), cdev: Self::cdev(), };
+        let mut psafe = ParrotSafe { dev: 0, count: 0, };
         Self::set_fops_safe(parrot_read, parrot_open, parrot_release);
         if psafe.alloc_chrdev_region_safe(0, 1, "parrot\0") != 0 {
             return Err("Failed to allocate char device region\0");

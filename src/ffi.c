@@ -6,12 +6,13 @@
 #include <linux/uaccess.h>
 
 struct module *owner = THIS_MODULE;
-unsigned int cdev_len = sizeof(struct cdev);
+
 struct cdev cdev_buffer;
 unsigned char *cdev_ptr = (unsigned char *)&cdev_buffer;
-unsigned int fops_len = sizeof(struct file_operations);
+
 struct file_operations fops;
 unsigned char *fops_ptr = (unsigned char *)&fops;
+
 void **parrot_owner_ptr = (void **)&fops.owner;
 void **parrot_open_ptr = (void **)&fops.open;
 void **parrot_read_ptr = (void **)&fops.read;
