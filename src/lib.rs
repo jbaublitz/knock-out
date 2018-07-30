@@ -1,4 +1,4 @@
-#![feature(lang_items)]
+#![feature(lang_items,panic_implementation)]
 #![no_std]
 
 use core::result::Result;
@@ -13,10 +13,7 @@ pub extern fn eh_personality() {}
 #[lang = "eh_unwind_resume"]
 #[no_mangle]
 pub extern fn eh_unwind_resume() {}
-#[lang = "panic_fmt"]
-fn panic_fmt() -> ! {
-    loop { }
-}
+#[panic_implementation]
 
 extern "C" {
     static owner: *const u8;
