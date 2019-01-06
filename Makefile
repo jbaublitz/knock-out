@@ -5,7 +5,8 @@ all: src/rust.o
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
 clean:
+	cargo clean
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
 src/rust.o: src/lib.rs
-	rustc -C panic=abort -C code-model=kernel -C relocation-model=static --emit obj --crate-type=cdylib -o src/rust.o src/lib.rs
+	cargo rustc --verbose --release -- --emit obj=src/rust.o -C panic=abort -C code-model=kernel -C relocation-model=static --crate-type=lib

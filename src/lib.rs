@@ -1,6 +1,7 @@
-#![feature(lang_items,panic_implementation)]
+#![feature(lang_items)]
 #![no_std]
 
+use core::panic::PanicInfo;
 use core::result::Result;
 
 mod parrot;
@@ -13,7 +14,10 @@ pub extern fn eh_personality() {}
 #[lang = "eh_unwind_resume"]
 #[no_mangle]
 pub extern fn eh_unwind_resume() {}
-#[panic_implementation]
+#[panic_handler]
+fn panic_handler(_info: &PanicInfo) -> ! {
+    loop {}
+}
 
 extern "C" {
     static owner: *const u8;
