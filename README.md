@@ -9,7 +9,8 @@ The kernel module creates a char device that on every `read()` call, will return
 ASCII art party parrot in your terminal, which ultimately makes an animation appear when used with `cat`.
 
 ## Why on earth would you do this?!
-Well... the longer story is that I was talking with a colleague, @rpless, about `parrot.live`. This came up
+Well... the longer story is that I was talking with a colleague, [rpless](https://github.com/rpless),
+about `parrot.live`. This came up
 during the same conversation as my desire to do something in kernel space. This also came up
 in the same conversation as my love of Rust. He suggested jokingly I should do exactly what I did in this 
 project. So I did!
