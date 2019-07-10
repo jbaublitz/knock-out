@@ -24,9 +24,9 @@ extern "C" {
     static cdev_ptr: *mut u8;
     static fops_ptr: *mut u8;
     static parrot_owner_ptr: *mut *const u8;
-    static parrot_read_ptr: *mut extern fn(*mut u8, *mut u8, u32, *const u32) -> i32;
-    static parrot_open_ptr: *mut extern fn(*mut u8, *mut u8) -> i32;
-    static parrot_release_ptr: *mut extern fn(*mut u8, *mut u8) -> i32;
+    static parrot_read_ptr: *mut extern "C" fn(*mut u8, *mut u8, u32, *const u32) -> i32;
+    static parrot_open_ptr: *mut extern "C" fn(*mut u8, *mut u8) -> i32;
+    static parrot_release_ptr: *mut extern "C" fn(*mut u8, *mut u8) -> i32;
     fn printk(msg: *const u8);
     fn alloc_chrdev_region(first: *const u32, first_minor: u32, count: u32, name: *const u8) -> i32;
     fn unregister_chrdev_region(first: u32, count: u32) -> i32;
