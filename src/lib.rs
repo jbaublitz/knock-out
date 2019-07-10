@@ -95,10 +95,10 @@ impl ParrotSafe {
                 open: extern "C" fn(*mut u8, *mut u8) -> i32,
                 release: extern "C" fn(*mut u8, *mut u8) -> i32) {
         unsafe {
-            *parrot_owner_ptr = Self::owner();
-            *parrot_read_ptr = read;
-            *parrot_open_ptr = open;
-            *parrot_release_ptr = release;
+            parrot_owner_ptr.write(Self::owner());
+            parrot_read_ptr.write(read);
+            parrot_open_ptr.write(open);
+            parrot_release_ptr.write(release);
         }
     }
 
