@@ -20,3 +20,5 @@ void **parrot_release_ptr = (void **)&fops.release;
 extern unsigned long copy_to_user_ffi(void *to, const void *from, unsigned long count) {
     return copy_to_user(to, from, count);
 };
+
+MODULE_LICENSE("GPL v2");
