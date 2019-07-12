@@ -29,7 +29,7 @@ extern "C" {
     static parrot_release_ptr: *mut extern "C" fn(*mut u8, *mut u8) -> i32;
     fn printk(msg: *const u8);
     fn alloc_chrdev_region(first: *const u32, first_minor: u32, count: u32, name: *const u8) -> i32;
-    fn unregister_chrdev_region(first: u32, count: u32) -> i32;
+    fn unregister_chrdev_region(first: u32, count: u32);
 	#[inline]
     fn copy_to_user_ffi(to: *mut u8, from: *const u8, count: u64) -> u64;
     fn cdev_init(cdev: *mut u8, fops: *const u8);
@@ -109,7 +109,7 @@ impl ParrotSafe {
     }
 
     #[inline]
-    fn unregister_chrdev_region_safe(&mut self) -> i32 {
+    fn unregister_chrdev_region_safe(&mut self) {
         unsafe { unregister_chrdev_region(self.dev, self.count) }
     }
 
