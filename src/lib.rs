@@ -43,7 +43,7 @@ const FRAMES: [&str; 10] = [FRAME0, FRAME1, FRAME2, FRAME3, FRAME4, FRAME5, FRAM
 static mut FRAME_COUNTER: u8 = 0;
 
 #[no_mangle]
-pub extern "C" fn parrot_read(_file: *mut u8, buf: *mut u8, _count: u32, _offset: *const u32) -> i32 {
+extern "C" fn parrot_read(_file: *mut u8, buf: *mut u8, _count: u32, _offset: *const u32) -> i32 {
     let frame = FRAMES.get(unsafe { FRAME_COUNTER } as usize).unwrap_or(&"");
     ParrotSafe::copy_to_user_ffi_safe(buf, frame.as_bytes());
     unsafe {
@@ -55,12 +55,12 @@ pub extern "C" fn parrot_read(_file: *mut u8, buf: *mut u8, _count: u32, _offset
 }
 
 #[no_mangle]
-pub extern "C" fn parrot_open(_inode: *mut u8, _file: *mut u8) -> i32 {
+extern "C" fn parrot_open(_inode: *mut u8, _file: *mut u8) -> i32 {
     0
 }
 
 #[no_mangle]
-pub extern "C" fn parrot_release(_inode: *mut u8, _file: *mut u8) -> i32 {
+extern "C" fn parrot_release(_inode: *mut u8, _file: *mut u8) -> i32 {
     0
 }
 
