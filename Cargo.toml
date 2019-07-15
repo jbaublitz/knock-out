@@ -2,3 +2,7 @@
 name = "knock-out"
 version = "0.1.0"
 authors = ["John Baublitz <john.m.baublitz@gmail.com>"]
+
+[lib]
+name = "parrot"
+crate-type = ["staticlib"]
