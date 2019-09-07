@@ -10,10 +10,10 @@ use parrot::*;
 
 #[lang = "eh_personality"]
 #[no_mangle]
-pub extern fn eh_personality() {}
+pub extern "C" fn eh_personality() {}
 #[lang = "eh_unwind_resume"]
 #[no_mangle]
-pub extern fn eh_unwind_resume() {}
+pub extern "C" fn eh_unwind_resume() {}
 #[panic_handler]
 fn panic_handler(_info: &PanicInfo) -> ! {
     loop {}
@@ -28,9 +28,10 @@ extern "C" {
     static parrot_open_ptr: *mut extern "C" fn(*mut u8, *mut u8) -> i32;
     static parrot_release_ptr: *mut extern "C" fn(*mut u8, *mut u8) -> i32;
     fn printk(msg: *const u8);
-    fn alloc_chrdev_region(first: *const u32, first_minor: u32, count: u32, name: *const u8) -> i32;
+    fn alloc_chrdev_region(first: *const u32, first_minor: u32, count: u32, name: *const u8)
+        -> i32;
     fn unregister_chrdev_region(first: u32, count: u32);
-	#[inline]
+    #[inline]
     fn copy_to_user_ffi(to: *mut u8, from: *const u8, count: u64) -> u64;
     fn cdev_init(cdev: *mut u8, fops: *const u8);
     fn cdev_add(cdev: *mut u8, dev: u32, count: u32) -> i32;
@@ -38,8 +39,9 @@ extern "C" {
     fn msleep(msecs: u64);
 }
 
-const FRAMES: [&str; 10] = [FRAME0, FRAME1, FRAME2, FRAME3, FRAME4, FRAME5, FRAME6,
-                            FRAME7, FRAME8, FRAME9];
+const FRAMES: [&str; 10] = [
+    FRAME0, FRAME1, FRAME2, FRAME3, FRAME4, FRAME5, FRAME6, FRAME7, FRAME8, FRAME9,
+];
 static mut FRAME_COUNTER: u8 = 0;
 
 #[no_mangle]
@@ -91,9 +93,11 @@ impl ParrotSafe {
     }
 
     #[inline]
-    fn set_fops_safe(read: extern "C" fn(*mut u8, *mut u8, u32, *const u32) -> i32,
-                open: extern "C" fn(*mut u8, *mut u8) -> i32,
-                release: extern "C" fn(*mut u8, *mut u8) -> i32) {
+    fn set_fops_safe(
+        read: extern "C" fn(*mut u8, *mut u8, u32, *const u32) -> i32,
+        open: extern "C" fn(*mut u8, *mut u8) -> i32,
+        release: extern "C" fn(*mut u8, *mut u8) -> i32,
+    ) {
         unsafe {
             parrot_owner_ptr.write(Self::owner());
             parrot_read_ptr.write(read);
@@ -103,9 +107,21 @@ impl ParrotSafe {
     }
 
     #[inline]
-    fn alloc_chrdev_region_safe(&mut self, first_minor: u32, count: u32, name: &'static str) -> i32 {
+    fn alloc_chrdev_region_safe(
+        &mut self,
+        first_minor: u32,
+        count: u32,
+        name: &'static str,
+    ) -> i32 {
         self.count = count;
-        unsafe { alloc_chrdev_region(&mut self.dev as *mut u32, first_minor, self.count, name.as_ptr()) }
+        unsafe {
+            alloc_chrdev_region(
+                &mut self.dev as *mut u32,
+                first_minor,
+                self.count,
+                name.as_ptr(),
+            )
+        }
     }
 
     #[inline]
@@ -139,7 +155,7 @@ impl ParrotSafe {
     }
 
     fn new() -> Result<Self, &'static str> {
-        let mut psafe = ParrotSafe { dev: 0, count: 0, };
+        let mut psafe = ParrotSafe { dev: 0, count: 0 };
         Self::set_fops_safe(parrot_read, parrot_open, parrot_release);
         if psafe.alloc_chrdev_region_safe(0, 1, "parrot\0") != 0 {
             return Err("Failed to allocate char device region\0");
@@ -177,14 +193,12 @@ pub extern "C" fn init_module() -> i32 {
 pub extern "C" fn cleanup_module() {
     unsafe {
         match GLOBAL_STATE {
-            Some(ref mut ps) => {
-                match ps.cleanup() {
-                    Ok(_) => (),
-                    Err(e) => {
-                        ParrotSafe::printk_safe(e);
-                    }
+            Some(ref mut ps) => match ps.cleanup() {
+                Ok(_) => (),
+                Err(e) => {
+                    ParrotSafe::printk_safe(e);
                 }
-            }
+            },
             None => (),
         }
     }
