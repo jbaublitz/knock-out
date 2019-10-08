@@ -1,0 +1,7 @@
+language: rust
+rust:
+- nightly
+
+script:
+  - apt-get install build-essential linux-headers
+  - make
