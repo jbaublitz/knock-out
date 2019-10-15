@@ -4,6 +4,8 @@
 use core::panic::PanicInfo;
 use core::result::Result;
 
+#[macro_use]
+mod macros;
 mod parrot;
 
 use parrot::*;
@@ -27,7 +29,7 @@ extern "C" {
     static parrot_read_ptr: *mut extern "C" fn(*mut u8, *mut u8, u32, *const u32) -> i32;
     static parrot_open_ptr: *mut extern "C" fn(*mut u8, *mut u8) -> i32;
     static parrot_release_ptr: *mut extern "C" fn(*mut u8, *mut u8) -> i32;
-    fn printk(msg: *const u8);
+    fn printk(msg: *const i8, ...);
     fn alloc_chrdev_region(first: *const u32, first_minor: u32, count: u32, name: *const u8)
         -> i32;
     fn unregister_chrdev_region(first: u32, count: u32);
@@ -88,11 +90,6 @@ impl ParrotSafe {
     }
 
     #[inline]
-    fn printk_safe(msg: &str) {
-        unsafe { printk(msg.as_ptr()) }
-    }
-
-    #[inline]
     fn set_fops_safe(
         read: extern "C" fn(*mut u8, *mut u8, u32, *const u32) -> i32,
         open: extern "C" fn(*mut u8, *mut u8) -> i32,
@@ -145,7 +142,7 @@ impl ParrotSafe {
         if rc == 0 {
             Ok(())
         } else {
-            Err("Failed to add char dev\0")
+            Err(c_string!("Failed to add char dev"))
         }
     }
 
@@ -158,7 +155,7 @@ impl ParrotSafe {
         let mut psafe = ParrotSafe { dev: 0, count: 0 };
         Self::set_fops_safe(parrot_read, parrot_open, parrot_release);
         if psafe.alloc_chrdev_region_safe(0, 1, "parrot\0") != 0 {
-            return Err("Failed to allocate char device region\0");
+            return Err(c_string!("Failed to allocate char device region"));
         }
         psafe.cdev_init_safe();
         psafe.cdev_add_safe()?;
@@ -180,7 +177,7 @@ pub extern "C" fn init_module() -> i32 {
     let parrot_safe = match ParrotSafe::new() {
         Ok(ps) => ps,
         Err(e) => {
-            ParrotSafe::printk_safe(e);
+            unsafe { printk!(KERN_ERR "%s", e) };
             return -1;
         }
     };
@@ -196,7 +193,7 @@ pub extern "C" fn cleanup_module() {
             Some(ref mut ps) => match ps.cleanup() {
                 Ok(_) => (),
                 Err(e) => {
-                    ParrotSafe::printk_safe(e);
+                    printk!(KERN_ERR "%s", to_ptr!(e));
                 }
             },
             None => (),
