@@ -4,5 +4,6 @@ rust:
 
 script:
   - sudo apt-get install build-essential linux-headers
+  - rustup component add rust-src
   - cargo install xargo
   - make
