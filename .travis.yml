@@ -3,6 +3,6 @@ rust:
 - nightly
 
 script:
-  - apt-get install build-essential linux-headers
+  - sudo apt-get install build-essential linux-headers
   - cargo install xargo
   - make
