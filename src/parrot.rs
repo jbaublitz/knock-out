@@ -1,4 +1,6 @@
-pub const FRAME0: &str = concat!("\x1B[2J", r#"
+pub const FRAME0: &str = concat!(
+    "\x1B[2J",
+    r#"
 
                          .cccc;;cc;';c.           
                       .,:dkdc:;;:c:,:d:.          
@@ -18,9 +20,13 @@ pub const FRAME0: &str = concat!("\x1B[2J", r#"
   .lo;,:cdkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkd,.c;     
 ,dx:..;lllllllllllllllllllllllllllllllllc'...     
 cNO;........................................
-"#, "\0");
+"#,
+    "\0"
+);
 
-pub const FRAME1: &str = concat!("\x1B[2J", r#"
+pub const FRAME1: &str = concat!(
+    "\x1B[2J",
+    r#"
                 .ckx;'........':c.                
              .,:c:::::oxxocoo::::,',.             
             .odc'..:lkkoolllllo;..;d,             
@@ -39,9 +45,13 @@ pub const FRAME1: &str = concat!("\x1B[2J", r#"
 .ldc..:oOXKXXXXXXKXXKXXXXXXXXXXXXXXXXXXXo..oc     
 :0o...:dxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxo,.:,     
 cNo........................................;' 
-"#, "\0");
+"#,
+    "\0"
+);
 
-pub const FRAME2: &str = concat!("\x1B[2J", r#"
+pub const FRAME2: &str = concat!(
+    "\x1B[2J",
+    r#"
             .cc;.  ...  .;c.                      
          .,,cc:cc:lxxxl:ccc:;,.                   
         .lo;...lKKklllookl..cO;                   
@@ -60,9 +70,13 @@ pub const FRAME2: &str = concat!("\x1B[2J", r#"
   cx,';okKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKl..;lc.   
   co..:dddddddddddddddddddddddddddddddddl::',::.  
 co........................................... 
-"#, "\0");
+"#,
+    "\0"
+);
 
-pub const FRAME3: &str = concat!("\x1B[2J", r#"
+pub const FRAME3: &str = concat!(
+    "\x1B[2J",
+    r#"
            .ccccccc.                              
       .,,,;cooolccoo;;,,.                         
      .dOx;..;lllll;..;xOd.                        
@@ -81,9 +95,13 @@ cNo..lXXXXXXXXXOolkXXXXXXXXXkl,..;:';.
   ;c.lOdood:'''oXXXXXXXXXXXXXXXXXXXXXk,..;ol.     
 ';.:xxxxxocccoxxxxxxxxxxxxxxxxxxxxxxl::'.';;.
   ';........................................;l'   
-"#, "\0");
+"#,
+    "\0"
+);
 
-pub const FRAME4: &str = concat!("\x1B[2J", r#"
+pub const FRAME4: &str = concat!(
+    "\x1B[2J",
+    r#"
                                                   
         .;:;;,.,;;::,.                            
      .;':;........'co:.                           
@@ -102,9 +120,13 @@ o...'';llllldkkkkkkkkkkkkkkkkkkdll;..'cdo.
 o..,l;'''''';dkkkkkkkkkkkkkkkkkkkkdlc,..;lc.      
 o..;lc;;;;;;,,;clllllllllllllllllllllc'..,:c.     
 o..........................................;' 
-"#, "\0");
+"#,
+    "\0"
+);
 
-pub const FRAME5: &str = concat!("\x1B[2J", r#"
+pub const FRAME5: &str = concat!(
+    "\x1B[2J",
+    r#"
                                                   
            .,,,,,,,,,.                            
          .ckKxodooxOOdcc.                         
@@ -123,9 +145,13 @@ kNo..':lllllldkkkkkkkkkkkkkkkkkdcc,.;l.
 KOc,c;''''''';lldkkkkkkkkkkkkkkkkkc..;lc.         
 xx:':;;;;,.,,...,;;cllllllllllllllc;'.;od,        
 cNo.....................................oc 
-"#, "\0");
+"#,
+    "\0"
+);
 
-pub const FRAME6: &str = concat!("\x1B[2J", r#"
+pub const FRAME6: &str = concat!(
+    "\x1B[2J",
+    r#"
                                                   
                                                   
                    .ccccccc.                      
@@ -144,9 +170,13 @@ pub const FRAME6: &str = concat!("\x1B[2J", r#"
   .:;';lxl''''':lldOOOOOOOOOOOOOOc..oc            
 ,dl,.'cooc:::,....,::coooooooooooc'.c:            
 cNo.................................oc 
-"#, "\0");
+"#,
+    "\0"
+);
 
-pub const FRAME7: &str = concat!("\x1B[2J", r#"
+pub const FRAME7: &str = concat!(
+    "\x1B[2J",
+    r#"
                                                   
                                                   
                                                   
@@ -165,9 +195,13 @@ pub const FRAME7: &str = concat!("\x1B[2J", r#"
   .;':;.'oxxxxxc''''';cccoxxxxxxxxxxxc..oc        
 ,do:'..,:llllll:;;;;;;,..,;:lllllllll;..oc        
 cNo.....................................oc 
-"#, "\0");
+"#,
+    "\0"
+);
 
-pub const FRAME8: &str = concat!("\x1B[2J", r#"
+pub const FRAME8: &str = concat!(
+    "\x1B[2J",
+    r#"
 
                                                   
                                                   
@@ -187,9 +221,13 @@ pub const FRAME8: &str = concat!("\x1B[2J", r#"
   .loc'.'lxxxxxxxxocc;''''';ccoxxxxxxxxx:..oc     
 olc,..',:cccccccccccc:;;;;;;;;:ccccccccc,.'c,     
 Ol;......................................;l' 
-"#, "\0");
+"#,
+    "\0"
+);
 
-pub const FRAME9: &str = concat!("\x1B[2J", r#"
+pub const FRAME9: &str = concat!(
+    "\x1B[2J",
+    r#"
                                                   
                               ,ddoodd,            
                          .cc' ,ooccoo,'cc.        
@@ -208,4 +246,6 @@ pub const FRAME9: &str = concat!("\x1B[2J", r#"
    .coc,;::ldddddddddddddlcccc:ldddddddddl:,cO;   
 ,xl::,..,cccccccccccccccccccccccccccccccc:;':xx,  
 cNd.........................................;lOc 
-"#, "\0");
+"#,
+    "\0"
+);
