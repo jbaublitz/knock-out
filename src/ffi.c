@@ -8,6 +8,26 @@
 
 DEFINE_MUTEX(parrot_mutex);
 
+void mutex_lock_c(void) {
+	mutex_lock(&parrot_mutex);
+}
+
+void mutex_unlock_c(void) {
+	mutex_unlock(&parrot_mutex);
+}
+
+void init_counter_c(struct file *f) {
+	f->private_data = 0;
+}
+
+size_t get_counter_c(struct file *f) {
+	return (size_t)f->private_data;
+}
+
+void increment_counter_c(struct file *f) {
+	f->private_data = (void *)(((size_t)f->private_data + 1) % 10);
+}
+
 struct file_operations fops;
 
 void set_fops_c(

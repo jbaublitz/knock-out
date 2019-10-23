@@ -1,14 +1,19 @@
 #![feature(lang_items)]
 #![no_std]
 
+#[macro_use]
+extern crate lazy_static;
+
 use core::ffi::c_void;
 use core::panic::PanicInfo;
 use core::result::Result;
 
 #[macro_use]
 mod macros;
+mod mutex;
 mod parrot;
 
+use mutex::Mutex;
 use parrot::*;
 
 #[lang = "eh_personality"]
@@ -38,42 +43,42 @@ extern "C" {
     fn cdev_init_c() -> i32;
     fn cdev_add_c(dev: u32, count: u32) -> i32;
     fn cdev_del_c();
+    fn init_counter_c(p: *mut c_void);
+    fn get_counter_c(p: *mut c_void) -> usize;
+    fn increment_counter_c(p: *mut c_void);
     fn msleep(msecs: u64);
 }
 
 const FRAMES: [&str; 10] = [
     FRAME0, FRAME1, FRAME2, FRAME3, FRAME4, FRAME5, FRAME6, FRAME7, FRAME8, FRAME9,
 ];
-static mut FRAME_COUNTER: u8 = 0;
+
+extern "C" fn parrot_open(_inode: *mut c_void, file: *mut c_void) -> i32 {
+    unsafe { init_counter_c(file) };
+    0
+}
 
 extern "C" fn parrot_read(
-    _file: *mut c_void,
+    file: *mut c_void,
     buf: *mut c_void,
     _count: u32,
     _offset: *mut c_void,
 ) -> i32 {
-    let frame = FRAMES.get(unsafe { FRAME_COUNTER } as usize).unwrap_or(&"");
+    let frame = FRAMES.get(unsafe { get_counter_c(file) }).unwrap_or(&"");
     ParrotSafe::copy_to_user(buf, frame.as_bytes());
     unsafe {
-        FRAME_COUNTER = FRAME_COUNTER.wrapping_add(1) % 10;
+        increment_counter_c(file);
         // Yes, this is terrible
         msleep(50);
     }
     frame.len() as i32
 }
 
-extern "C" fn parrot_open(_inode: *mut c_void, _file: *mut c_void) -> i32 {
-    0
-}
-
 extern "C" fn parrot_release(_inode: *mut c_void, _file: *mut c_void) -> i32 {
     0
 }
 
-struct ParrotSafe {
-    dev: u32,
-    count: u32,
-}
+pub struct ParrotSafe(u32, u32);
 
 impl ParrotSafe {
     #[inline]
@@ -93,20 +98,13 @@ impl ParrotSafe {
         count: u32,
         name: &'static str,
     ) -> i32 {
-        self.count = count;
-        unsafe {
-            alloc_chrdev_region(
-                &mut self.dev as *mut u32,
-                first_minor,
-                self.count,
-                name.as_ptr(),
-            )
-        }
+        self.1 = count;
+        unsafe { alloc_chrdev_region(&mut self.0 as *mut u32, first_minor, self.1, name.as_ptr()) }
     }
 
     #[inline]
     fn unregister_chrdev_region_safe(&mut self) {
-        unsafe { unregister_chrdev_region(self.dev, self.count) }
+        unsafe { unregister_chrdev_region(self.0, self.1) }
     }
 
     #[inline]
@@ -121,7 +119,7 @@ impl ParrotSafe {
 
     #[inline]
     fn cdev_add(&mut self) -> Result<(), &'static str> {
-        let rc = unsafe { cdev_add_c(self.dev, self.count) };
+        let rc = unsafe { cdev_add_c(self.0, self.1) };
         if rc == 0 {
             Ok(())
         } else {
@@ -134,15 +132,14 @@ impl ParrotSafe {
         unsafe { cdev_del_c() }
     }
 
-    fn new() -> Result<Self, &'static str> {
-        let mut psafe = ParrotSafe { dev: 0, count: 0 };
-        psafe.set_fops(parrot_open, parrot_read, parrot_release);
-        if psafe.alloc_chrdev_region_safe(0, 1, "parrot\0") != 0 {
+    fn init(&mut self) -> Result<(), &'static str> {
+        self.set_fops(parrot_open, parrot_read, parrot_release);
+        if self.alloc_chrdev_region_safe(0, 1, "parrot\0") != 0 {
             return Err(c_string!("Failed to allocate char device region"));
         }
-        psafe.cdev_init();
-        psafe.cdev_add()?;
-        Ok(psafe)
+        self.cdev_init();
+        self.cdev_add()?;
+        Ok(())
     }
 
     fn cleanup(&mut self) -> Result<(), &'static str> {
@@ -152,34 +149,49 @@ impl ParrotSafe {
     }
 }
 
-static mut GLOBAL_STATE: Option<ParrotSafe> = None;
+lazy_static! {
+    static ref MUTEX: Mutex<ParrotSafe> = Mutex::init(ParrotSafe(0, 0));
+}
 
 #[no_mangle]
 #[link_section = ".text"]
 pub extern "C" fn init_module() -> i32 {
-    let parrot_safe = match ParrotSafe::new() {
-        Ok(ps) => ps,
-        Err(e) => {
-            unsafe { printk!(KERN_ERR "%s", e) };
+    let mut mutex_guard = MUTEX.acquire();
+    let parrot_ref = match mutex_guard.get_mut() {
+        Some(p) => p,
+        None => {
+            unsafe {
+                printk!(KERN_ERR "%s", to_ptr!(c_string!("Failed to get reference to global state")))
+            };
             return -1;
         }
     };
-    unsafe { GLOBAL_STATE = Some(parrot_safe) };
-    0
+    match parrot_ref.init() {
+        Ok(_) => 0,
+        Err(e) => {
+            unsafe { printk!(KERN_ERR "%s", to_ptr!(e)) };
+            -1
+        }
+    }
 }
 
 #[no_mangle]
 #[link_section = ".text"]
 pub extern "C" fn cleanup_module() {
-    unsafe {
-        match GLOBAL_STATE {
-            Some(ref mut ps) => match ps.cleanup() {
-                Ok(_) => (),
-                Err(e) => {
-                    printk!(KERN_ERR "%s", to_ptr!(e));
-                }
-            },
-            None => (),
+    let mut mutex_guard = MUTEX.acquire();
+    let parrot_ref = match mutex_guard.get_mut() {
+        Some(p) => p,
+        None => {
+            unsafe {
+                printk!(KERN_ERR "%s", to_ptr!(c_string!("Failed to get reference to global state")))
+            };
+            return;
+        }
+    };
+    match parrot_ref.cleanup() {
+        Ok(_) => (),
+        Err(e) => {
+            unsafe { printk!(KERN_ERR "%s", to_ptr!(e)) };
         }
     }
 }
