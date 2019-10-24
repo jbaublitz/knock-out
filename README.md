@@ -2,7 +2,7 @@
 Crate with an example of a kernel module in Rust
 
 ## What does this crate actually do
-This repo is a Makfile with a Rust project that, using Kbuild, the kernel's build system, will generate
+This repo is a Makefile with a Rust project that, using Kbuild, the kernel's build system, will generate
 a kernel module file named `parrot.ko`.
 
 The kernel module creates a char device that on every `read()` call, will return a new frame of an
@@ -24,8 +24,11 @@ module was pretty fun and taught me a lot about the compiler.
 
 ## Instructions for party parrot
 ```
-# Make sure Rust in installed via rustup
+# Make sure Rust is installed via rustup
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# This project requires a nightly Rust build
+rustup default nightly
 
 # Build and load the kernel module
 make
