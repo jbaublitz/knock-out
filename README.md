@@ -11,21 +11,21 @@ ASCII art party parrot in your terminal, which ultimately makes an animation app
 ## Why on earth would you do this?!
 Well... the longer story is that I was talking with a colleague, [rpless](https://github.com/rpless),
 about `parrot.live`. This came up
-during the same conversation as my desire to do something in kernel space. This also came up
-in the same conversation as my love of Rust. He suggested jokingly I should do exactly what I did in this 
+during the same conversation as my desire to do something in kernel space and
+my love of Rust. He suggested jokingly I should do this
 project. So I did!
 
-The shorter answer is "for science!"
+Basically, it was "for science!"
 
 A more serious answer is that I was interested in seeing how compatible Rust actually is
 on a C ABI level. I was also interested in digging into Rust internals a bit more.
 Debugging some of the initial issues that came up trying to load the Rust kernel
-module was pretty fun and taught me a lot about the compiler.
+module was pretty fun and taught me a lot about the compiler and the Linux kernel.
 
 ## Instructions for party parrot
 ```
 # Make sure Rust is installed via rustup
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+# See https://rustup.rs/ for instructions
 
 # This project requires a nightly Rust build
 rustup default nightly
