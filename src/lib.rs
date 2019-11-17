@@ -24,7 +24,7 @@ pub extern "C" fn eh_personality() {}
 pub extern "C" fn eh_unwind_resume() {}
 #[panic_handler]
 fn panic_handler(_info: &PanicInfo) -> ! {
-    loop {}
+    unsafe { panic(to_ptr!(c_string!("Rust panic was triggered"))) }
 }
 
 extern "C" {
@@ -34,6 +34,7 @@ extern "C" {
         release: extern "C" fn(*mut c_void, *mut c_void) -> i32,
     );
 
+    fn panic(msg: *const i8, ...) -> !;
     fn printk(msg: *const i8, ...);
     fn alloc_chrdev_region(first: *const u32, first_minor: u32, count: u32, name: *const u8)
         -> i32;

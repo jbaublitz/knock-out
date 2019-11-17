@@ -4,6 +4,14 @@ parrot-objs := src/ffi.o src/rust.o
 all: src/rust.o
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
+.PHONY:
+fmt:
+	xargo fmt
+
+.PHONY:
+clippy:
+	xargo clippy
+
 clean:
 	cargo clean
 	rm -rf rust_objs
