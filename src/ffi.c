@@ -41,14 +41,32 @@ void set_fops_c(
 	fops.release = release;
 }
 
+dev_t device;
+
+unsigned int get_chrdev_major_c(void) {
+	return MAJOR(device);
+}
+
+unsigned int get_chrdev_minor_c(void) {
+	return MINOR(device);
+}
+
+int alloc_chrdev_region_c(unsigned int first_minor, unsigned int count, char *name) {
+	return alloc_chrdev_region(&device, first_minor, count, name);
+}
+
+void unregister_chrdev_region_c(unsigned int count) {
+	unregister_chrdev_region(device, count);
+}
+
 struct cdev cdev;
 
 void cdev_init_c(void) {
 	cdev_init(&cdev, &fops);
 }
 
-int cdev_add_c(int dev, int count) {
-	return cdev_add(&cdev, dev, count);
+int cdev_add_c(int count) {
+	return cdev_add(&cdev, device, count);
 }
 
 void cdev_del_c(void) {
