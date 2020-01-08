@@ -165,7 +165,6 @@ lazy_static! {
 }
 
 #[no_mangle]
-#[link_section = ".text"]
 pub extern "C" fn init_module() -> i32 {
     let mut mutex_guard = MUTEX.acquire();
     let parrot_ref = match mutex_guard.get_mut() {
@@ -187,7 +186,6 @@ pub extern "C" fn init_module() -> i32 {
 }
 
 #[no_mangle]
-#[link_section = ".text"]
 pub extern "C" fn cleanup_module() {
     let mut mutex_guard = MUTEX.acquire();
     let parrot_ref = match mutex_guard.get_mut() {
