@@ -38,6 +38,10 @@ There are a few interesting applications that can be derived from this project.
     (as those often are littered with `#ifdef`s in the kernel)
     * If there are C macros, you're most likely better off doing it in C
 
+## Watch my talk!
+I gave a more in depth explanation of the process of creating this kernel module
+[at DevConf.cz 2020](https://www.youtube.com/watch?v=oacmnKlWZT8&t=32s).
+
 ## Instructions for party parrot
 ```
 # Make sure Rust is installed via rustup
