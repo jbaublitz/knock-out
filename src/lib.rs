@@ -19,9 +19,6 @@ use parrot::*;
 #[lang = "eh_personality"]
 #[no_mangle]
 pub extern "C" fn eh_personality() {}
-#[lang = "eh_unwind_resume"]
-#[no_mangle]
-pub extern "C" fn eh_unwind_resume() {}
 #[panic_handler]
 fn panic_handler(_info: &PanicInfo) -> ! {
     unsafe { panic(to_ptr!(c_string!("Rust panic was triggered"))) }
