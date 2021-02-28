@@ -22,3 +22,4 @@ src/rust.o: Cargo.toml src/ffi.c src/lib.rs src/macros.rs src/mutex.rs src/parro
 	mkdir -p rust_objs
 	cd rust_objs && ar x ../target/x86_64-linux-kernel/release/librust.a
 	ld -r -o src/rust.o rust_objs/*.o
+	touch src/.rust.o.cmd
