@@ -2,7 +2,7 @@ obj-m := parrot.o
 parrot-objs := src/ffi.o src/rust.o
 
 all: src/rust.o
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	$(call if_changed,make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules)
 
 .PHONY:
 fmt:
