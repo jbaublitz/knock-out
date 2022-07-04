@@ -1,4 +1,7 @@
-pub const FRAME0: &str = concat!(
+//! This module contains the frames for the party parrot animation.
+
+/// First frame
+pub(crate) const FRAME0: &str = concat!(
     "\x1B[2J",
     r#"
 
@@ -24,7 +27,8 @@ cNO;........................................
     "\0"
 );
 
-pub const FRAME1: &str = concat!(
+/// Second frame
+pub(crate) const FRAME1: &str = concat!(
     "\x1B[2J",
     r#"
                 .ckx;'........':c.                
@@ -49,7 +53,8 @@ cNo........................................;'
     "\0"
 );
 
-pub const FRAME2: &str = concat!(
+/// Third frame
+pub(crate) const FRAME2: &str = concat!(
     "\x1B[2J",
     r#"
             .cc;.  ...  .;c.                      
@@ -74,7 +79,8 @@ co...........................................
     "\0"
 );
 
-pub const FRAME3: &str = concat!(
+/// Fourth frame
+pub(crate) const FRAME3: &str = concat!(
     "\x1B[2J",
     r#"
            .ccccccc.                              
@@ -99,7 +105,8 @@ cNo..lXXXXXXXXXOolkXXXXXXXXXkl,..;:';.
     "\0"
 );
 
-pub const FRAME4: &str = concat!(
+/// Fifth frame
+pub(crate) const FRAME4: &str = concat!(
     "\x1B[2J",
     r#"
                                                   
@@ -124,7 +131,8 @@ o..........................................;'
     "\0"
 );
 
-pub const FRAME5: &str = concat!(
+/// Sixth frame
+pub(crate) const FRAME5: &str = concat!(
     "\x1B[2J",
     r#"
                                                   
@@ -149,7 +157,8 @@ cNo.....................................oc
     "\0"
 );
 
-pub const FRAME6: &str = concat!(
+/// Seventh frame
+pub(crate) const FRAME6: &str = concat!(
     "\x1B[2J",
     r#"
                                                   
@@ -174,7 +183,8 @@ cNo.................................oc
     "\0"
 );
 
-pub const FRAME7: &str = concat!(
+/// Eighth frame
+pub(crate) const FRAME7: &str = concat!(
     "\x1B[2J",
     r#"
                                                   
@@ -199,7 +209,8 @@ cNo.....................................oc
     "\0"
 );
 
-pub const FRAME8: &str = concat!(
+/// Ninth frame
+pub(crate) const FRAME8: &str = concat!(
     "\x1B[2J",
     r#"
 
@@ -225,7 +236,8 @@ Ol;......................................;l'
     "\0"
 );
 
-pub const FRAME9: &str = concat!(
+/// Tenth frame
+pub(crate) const FRAME9: &str = concat!(
     "\x1B[2J",
     r#"
                                                   

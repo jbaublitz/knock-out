@@ -1,0 +1,2 @@
+#!/bin/bash
+make fmt-check && make LLVM=1 && make clean || exit 1
