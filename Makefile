@@ -4,8 +4,8 @@ all:
 clean:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
 
-fmt-check:
+rustfmtcheck:
 	rustfmt --check parrot.rs frames.rs
 
-fmt:
+rustfmt:
 	rustfmt parrot.rs frames.rs

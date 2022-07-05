@@ -1,6 +1,10 @@
 //! This module contains the frames for the party parrot animation.
 
-/// First frame
+/// Frames in sequential order.
+pub(crate) const FRAMES: [&str; 10] = [
+    FRAME0, FRAME1, FRAME2, FRAME3, FRAME4, FRAME5, FRAME6, FRAME7, FRAME8, FRAME9,
+];
+
 pub(crate) const FRAME0: &str = concat!(
     "\x1B[2J",
     r#"
@@ -27,7 +31,6 @@ cNO;........................................
     "\0"
 );
 
-/// Second frame
 pub(crate) const FRAME1: &str = concat!(
     "\x1B[2J",
     r#"
@@ -53,7 +56,6 @@ cNo........................................;'
     "\0"
 );
 
-/// Third frame
 pub(crate) const FRAME2: &str = concat!(
     "\x1B[2J",
     r#"
@@ -79,7 +81,6 @@ co...........................................
     "\0"
 );
 
-/// Fourth frame
 pub(crate) const FRAME3: &str = concat!(
     "\x1B[2J",
     r#"
@@ -105,7 +106,6 @@ cNo..lXXXXXXXXXOolkXXXXXXXXXkl,..;:';.
     "\0"
 );
 
-/// Fifth frame
 pub(crate) const FRAME4: &str = concat!(
     "\x1B[2J",
     r#"
@@ -131,7 +131,6 @@ o..........................................;'
     "\0"
 );
 
-/// Sixth frame
 pub(crate) const FRAME5: &str = concat!(
     "\x1B[2J",
     r#"
@@ -157,7 +156,6 @@ cNo.....................................oc
     "\0"
 );
 
-/// Seventh frame
 pub(crate) const FRAME6: &str = concat!(
     "\x1B[2J",
     r#"
@@ -183,7 +181,6 @@ cNo.................................oc
     "\0"
 );
 
-/// Eighth frame
 pub(crate) const FRAME7: &str = concat!(
     "\x1B[2J",
     r#"
@@ -209,7 +206,6 @@ cNo.....................................oc
     "\0"
 );
 
-/// Ninth frame
 pub(crate) const FRAME8: &str = concat!(
     "\x1B[2J",
     r#"
@@ -236,7 +232,6 @@ Ol;......................................;l'
     "\0"
 );
 
-/// Tenth frame
 pub(crate) const FRAME9: &str = concat!(
     "\x1B[2J",
     r#"
