@@ -1,73 +1,57 @@
-use core::sync::atomic::{AtomicUsize, Ordering};
+//! Example kernel module that creates a device, /dev/parrot, that when read
+//! from will generate an animation.
+
+use core::cmp::min;
 use kernel::{
     bindings::msleep,
-    chrdev::Registration,
-    file::{File, Operations, ToUse},
+    file::{File, Operations},
     io_buffer::IoBufferWriter,
+    miscdev::Registration,
     prelude::*,
 };
 
 mod frames;
-use frames::*;
+use frames::{calc_frame_and_offset, FRAMES};
 
 module! {
     type: ParrotSafe,
     name: b"party_parrot",
-    author: b"John Baublitz (john.m.baublitz@gmail.com)",
+    author: b"John Baublitz <john.m.baublitz@gmail.com>",
     description: b"Get the party started",
     license: b"GPL",
 }
 
-const FRAMES: [&str; 10] = [
-    FRAME0, FRAME1, FRAME2, FRAME3, FRAME4, FRAME5, FRAME6, FRAME7, FRAME8, FRAME9,
-];
-
-struct ParrotSafe(Pin<Box<Registration<1>>>);
+struct ParrotSafe(Pin<Box<Registration<ParrotOps>>>);
 
 impl kernel::Module for ParrotSafe {
-    fn init(name: &'static CStr, module: &'static ThisModule) -> Result<Self> {
-        let mut registration = Registration::new_pinned(name, 0, module)?;
-        registration.as_mut().register::<ParrotOps>()?;
-        Ok(ParrotSafe(registration))
+    fn init(_: &'static CStr, _: &'static ThisModule) -> Result<Self> {
+        Ok(ParrotSafe(Registration::new_pinned(fmt!("parrot"), ())?))
     }
 }
 
-struct ParrotOps(usize);
+struct ParrotOps;
 
-impl<'a> Operations for ParrotOps {
-    const TO_USE: ToUse = ToUse {
-        read: true,
-        read_iter: false,
-        write: false,
-        write_iter: false,
-        compat_ioctl: false,
-        fsync: false,
-        ioctl: false,
-        mmap: false,
-        poll: false,
-        seek: false,
-    };
-
-    type Data = Box<AtomicUsize>;
-
+#[vtable]
+impl Operations for ParrotOps {
     fn open(_: &Self::OpenData, _: &File) -> Result<Self::Data> {
-        Ok(Box::try_new(AtomicUsize::new(0))?)
+        Ok(())
     }
 
-    fn read(data: &AtomicUsize, _: &File, buf: &mut impl IoBufferWriter, _: u64) -> Result<usize> {
-        let frame = FRAMES
-            .get(
-                match data.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |i| {
-                    Some((i + 1) % FRAMES.len())
-                }) {
-                    Ok(i) => i,
-                    Err(i) => i,
-                },
-            )
-            .unwrap_or(&"");
-        buf.write_slice(&frame.as_bytes())?;
-        // Yes, this is terrible
-        unsafe { msleep(50) };
-        Ok(frame.len())
+    fn read(_: (), _: &File, buf: &mut impl IoBufferWriter, offset: u64) -> Result<usize> {
+        if buf.len() < 1 {
+            pr_info!("parrot device driver requires a buffer of at least 1 byte");
+            return Err(EINVAL);
+        }
+        let (frame, frame_offset) = calc_frame_and_offset(offset);
+        let frame = FRAMES.get(frame).ok_or(EIO)?;
+        let offset_usize: usize = frame_offset.try_into()?;
+        let s = &frame.as_bytes()[offset_usize..][..min(frame.len() - offset_usize, buf.len())];
+        buf.write_slice(s)?;
+        if offset_usize + s.len() == frame.len() {
+            // SAFETY: This invocation of `msleep()` takes a valid millisecond
+            // integer value for the duration of the sleep.
+            unsafe { msleep(50) };
+        }
+        Ok(s.len())
     }
 }
