@@ -22,14 +22,8 @@ they've done, I've migrated this kernel module over to use the Rust for Linux ke
 make
 sudo insmod parrot.ko
 
-# Find the char device ID in the kernel
-cat /proc/devices | grep parrot
-
-# Make the device node exposing the char device
-sudo mknod /dev/parrot c [ID_FROM_PREVIOUS_COMMAND] 0
-
 # Party hard!
-cat /dev/parrot
+sudo cat /dev/parrot
 ```
 
 # Attribution for ASCII art
