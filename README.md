@@ -27,5 +27,7 @@ sudo cat /dev/parrot
 ```
 
 # Attribution for ASCII art
-The frames for the parrot were shamelessly lifted from [`parrot.live`](https://github.com/hugomd/parrot.live).
-Please go there if you like the ASCII art and shower the maker with praise - they're not mine.
+The frames for the parrot are from [`parrot.live`](https://github.com/hugomd/parrot.live).
+parrot.live appears to have taken them from [`terminal-parrot`](https://github.com/jmhobbs/terminal-parrot).
+That project states that the frames came from `jp2a`.
+
