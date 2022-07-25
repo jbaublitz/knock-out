@@ -1,9 +1,9 @@
 //! Example kernel module that creates a device, /dev/parrot, that when read
 //! from will generate an animation.
 
-use core::cmp::min;
+use core::{cmp::min, time::Duration};
 use kernel::{
-    bindings::msleep,
+    delay::coarse_sleep,
     file::{File, Operations},
     io_buffer::IoBufferWriter,
     miscdev::Registration,
@@ -48,9 +48,7 @@ impl Operations for ParrotOps {
         let s = &frame.as_bytes()[offset_usize..][..min(frame.len() - offset_usize, buf.len())];
         buf.write_slice(s)?;
         if offset_usize + s.len() == frame.len() {
-            // SAFETY: This invocation of `msleep()` takes a valid millisecond
-            // integer value for the duration of the sleep.
-            unsafe { msleep(50) };
+            coarse_sleep(Duration::from_millis(50));
         }
         Ok(s.len())
     }
