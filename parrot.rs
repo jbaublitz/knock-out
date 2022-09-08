@@ -15,10 +15,10 @@ use frames::{calc_frame_and_offset, FRAMES};
 
 module! {
     type: ParrotSafe,
-    name: b"party_parrot",
-    author: b"John Baublitz <john.m.baublitz@gmail.com>",
-    description: b"Get the party started",
-    license: b"GPL",
+    name: "party_parrot",
+    author: "John Baublitz <john.m.baublitz@gmail.com>",
+    description: "Get the party started",
+    license: "GPL",
 }
 
 struct ParrotSafe(Pin<Box<Registration<ParrotOps>>>);
