@@ -32,7 +32,7 @@ pub(crate) const FRAMES: [&str; 10] = [
     FRAME0, FRAME1, FRAME2, FRAME3, FRAME4, FRAME5, FRAME6, FRAME7, FRAME8, FRAME9,
 ];
 
-pub(crate) const FRAME0: &str = concat!(
+const FRAME0: &str = concat!(
     "\x1B[2J",
     r#"
 
@@ -57,7 +57,7 @@ cNO;........................................
 "#,
 );
 
-pub(crate) const FRAME1: &str = concat!(
+const FRAME1: &str = concat!(
     "\x1B[2J",
     r#"
                 .ckx;'........':c.                
@@ -81,7 +81,7 @@ cNo........................................;'
 "#,
 );
 
-pub(crate) const FRAME2: &str = concat!(
+const FRAME2: &str = concat!(
     "\x1B[2J",
     r#"
             .cc;.  ...  .;c.                      
@@ -105,7 +105,7 @@ co...........................................
 "#,
 );
 
-pub(crate) const FRAME3: &str = concat!(
+const FRAME3: &str = concat!(
     "\x1B[2J",
     r#"
            .ccccccc.                              
@@ -129,7 +129,7 @@ cNo..lXXXXXXXXXOolkXXXXXXXXXkl,..;:';.
 "#,
 );
 
-pub(crate) const FRAME4: &str = concat!(
+const FRAME4: &str = concat!(
     "\x1B[2J",
     r#"
                                                   
@@ -153,7 +153,7 @@ o..........................................;'
 "#,
 );
 
-pub(crate) const FRAME5: &str = concat!(
+const FRAME5: &str = concat!(
     "\x1B[2J",
     r#"
                                                   
@@ -177,7 +177,7 @@ cNo.....................................oc
 "#,
 );
 
-pub(crate) const FRAME6: &str = concat!(
+const FRAME6: &str = concat!(
     "\x1B[2J",
     r#"
                                                   
@@ -201,7 +201,7 @@ cNo.................................oc
 "#,
 );
 
-pub(crate) const FRAME7: &str = concat!(
+const FRAME7: &str = concat!(
     "\x1B[2J",
     r#"
                                                   
@@ -225,7 +225,7 @@ cNo.....................................oc
 "#,
 );
 
-pub(crate) const FRAME8: &str = concat!(
+const FRAME8: &str = concat!(
     "\x1B[2J",
     r#"
 
@@ -250,7 +250,7 @@ Ol;......................................;l'
 "#,
 );
 
-pub(crate) const FRAME9: &str = concat!(
+const FRAME9: &str = concat!(
     "\x1B[2J",
     r#"
                                                   
